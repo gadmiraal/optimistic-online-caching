@@ -1,0 +1,35 @@
+{
+  "catalog": 80,
+  "cache size": 10,
+  "cache type": "OMD",
+  "time window": 100,
+  "users": 5,
+  "caches": 5,
+  "config": [
+    {
+      "user_id": 0,
+      "distance to caches": {"0": 0, "1": 0 , "2": 0},
+      "distance to main": 1
+    },
+    {
+      "user_id": 1,
+      "distance to caches": {"1": 0, "2": 0 , "3": 0},
+      "distance to main": 1
+    },
+    {
+      "user_id": 2,
+      "distance to caches": {"2": 0, "3": 0 , "4": 0},
+      "distance to main": 1
+    },
+    {
+      "user_id": 3,
+      "distance to caches": {"3": 0, "4": 0 , "0": 0},
+      "distance to main": 1
+    },
+    {
+      "user_id": 4,
+      "distance to caches": {"4": 0, "0": 0 , "1": 0},
+      "distance to main": 1
+    }
+  ]
+}

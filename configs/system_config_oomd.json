@@ -1,0 +1,15 @@
+{
+  "catalog": 80,
+  "cache size": 10,
+  "cache type": "OOMD",
+  "time window": 10000,
+  "users": 1,
+  "caches": 1,
+  "config": [
+    {
+      "user_id": 0,
+      "distance to caches": {"0": 0},
+      "distance to main": 1
+    }
+  ]
+}
