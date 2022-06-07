@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from traces.trace_abc import Trace
+np.random.seed(42)
 
 
 class Adversarial(Trace):
@@ -29,4 +30,4 @@ class Adversarial(Trace):
                 shots.append([cat2[i % 10 + 10 * k], Tau[k] + .05 * i])
         rs = pd.DataFrame(shots, columns=['R', 't', ]).sort_values(by='t').R.values[:self.T]
 
-        return self.transform_to_request_array(rs)
+        return rs

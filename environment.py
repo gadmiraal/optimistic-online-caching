@@ -41,7 +41,10 @@ class Environment:
         cs = []
         klass = globals()[c_type]
         for i in range(data["caches"]):
-            cs.append(Cache(klass(k, N, T)))
+            if c_type == "OOMD":
+                cs.append(Cache(klass(k, N, T, data["chance"])))
+            else:
+                cs.append(Cache(klass(k, N, T)))
 
         # Create users
         main_server = MainServer()
@@ -77,7 +80,7 @@ class Environment:
 
             plt.plot(np.arange(T), avg, "--")
 
-        plt.title("Average cache cost over time for trace: " + trace_name)
+        plt.title("Average cache cost with: " + self.c_type + ", for trace: " + trace_name)
         plt.xlabel("Time")
         plt.ylabel("Average cache cost")
         # plt.legend(loc="lower right")
@@ -90,7 +93,7 @@ class Environment:
         # Todo change when moving to a bipartite system
         for user in self.users:
             rs = self.trace.generate()
-            self.trace.plot(rs)
+            # self.trace.plot(rs)
             rs = self.trace.transform_to_request_array(rs)
             user.set_trace(rs)
 
