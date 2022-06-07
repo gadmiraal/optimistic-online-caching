@@ -6,7 +6,6 @@ import gurobipy as gp
 from numpy import ndarray
 from gurobipy import GRB
 
-
 from policies.policy_abc import Policy
 
 
@@ -19,7 +18,7 @@ class OMD_Network(Policy):
 		self.I = users
 		self.x = np.full((self.J, self.N), self.k / self.N)  # The vector indicating which files are stored in cache
 		self.R = 1 * self.I  # The number of files requested for each request
-		self.z = np.zeros((self.I, self.J, self.N))
+		self.z = np.full((self.I, self.J, self.N), 1 / self.J)
 		self.learning_rate = self.calculate_lr()  # Learning rate of OMD
 		self.init_problem()
 		self.w = np.ones((self.I, self.J, self.N))
@@ -27,7 +26,7 @@ class OMD_Network(Policy):
 
 	def init_problem(self):
 		self.a = cp.Parameter((self.J, self.N))  # Parameter projecting the x variable
-		self.b = {}  							 # Parameter projecting the z variable
+		self.b = {}  # Parameter projecting the z variable
 		for j in range(self.J):
 			self.b[j] = cp.Parameter((self.I, self.N))
 
@@ -43,8 +42,8 @@ class OMD_Network(Policy):
 		self.constraints.append([cp.sum(self.b_var[j]) <= 1 for j in range(self.J)])
 		self.constraints.append([self.b_var[j] <= self.a_var for j in range(self.J)])
 
-		flatten_list = lambda a: [element for item in a for element in flatten_list(item)] if type(a) is list else [a]
-		self.constraints = flatten_list(self.constraints)
+		self.constraints = self.flatten(self.constraints)
+
 
 		self.c = []
 		for j in range(self.J):
@@ -55,6 +54,11 @@ class OMD_Network(Policy):
 				cp.sum_squares(hstack(self.c))
 			), self.constraints)
 
+	def flatten(self, a):
+		if type(a) is list:
+			return [element for item in a for element in self.flatten(item)]
+		else:
+			return [a]
 
 	def get(self, y: ndarray) -> float:
 		key = np.where(y == 1)[0][0]  # Todo change when multiple requests are made
@@ -63,9 +67,11 @@ class OMD_Network(Policy):
 	def put(self, r_t: ndarray):
 		z_hat_t_next = self.z * np.exp(self.learning_rate * r_t * self.w)
 		x_t_next, z_t_next = self.project(z_hat_t_next)
+		print(r_t[0])
+		# print(z_t_next[0, 0, :])
 		self.x = x_t_next
 		self.z = z_t_next
-
+		print(sum(self.z[0, :, 0]))
 
 	def calculate_lr(self):
 		t1 = 2 * np.log(self.N / self.k)
@@ -73,12 +79,12 @@ class OMD_Network(Policy):
 		t3 = np.sqrt(t1 / t2)
 		return t3
 
-	def cost(self, r_t):
+	def utility(self, r_t):
 		total = 0
 		for i in range(self.I):
 			for j in range(self.J):
 				for n in range(self.N):
-					total += r_t[i, n] * (1-self.z[i, j, n]) * self.w[i, j, n]
+					total += r_t[i, n] * self.z[i, j, n] * self.w[i, j, n]
 		return total
 
 	def cache_content(self):
@@ -101,3 +107,6 @@ class OMD_Network(Policy):
 
 	def return_x(self):
 		return self.x
+
+	def cost(self, r_t):
+		return 0

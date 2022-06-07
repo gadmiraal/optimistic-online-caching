@@ -20,22 +20,21 @@ for i in range(I):
 	r = trace.transform_to_request_array(trace.generate())
 	request[:, i, :] = r
 
-cost = []
+utility = []
 for t in range(T):
 	r_t = request[t]
-	y = system.get(r_t)
-	cost.append(system.cost(r_t))
+	utility.append(system.utility(r_t))
 	system.put(r_t)
 
-T = len(cost)
+T = len(utility)
 avg = np.zeros(T)
-avg[0] = cost[0]
+avg[0] = utility[0]
 for t in range(1, T):
-	avg[t] = sum(cost[:t]) / t
+	avg[t] = sum(utility[:t]) / t
 
 plt.plot(np.arange(T), avg, "--")
 
-plt.title("Average cache cost over time for trace: " + trace.get_name())
+plt.title("Average cache utility over time for trace: " + trace.get_name())
 plt.xlabel("Time")
 plt.ylabel("Average cache cost")
 # plt.legend(loc="lower right")

@@ -52,11 +52,15 @@ class PoissonPoint(Trace):
             frac=1).iloc[
              :10_000]
 
-        rs = df.R
-        print(df.R)
-        print(df.t)
+        df = df.round()
+        zipped = list(zip(df.t.to_numpy(), df.R.to_numpy()))
+        rs = np.full(len(zipped), -1)
+        for (t, r) in zipped:
+            if rs[int(t)] == -1:
+                rs[int(t)] = int(r)
+
         print(rs.shape)
-        plt.scatter(df.t, df.R, s=0.5, color='C0')
+        plt.scatter(rs, s=0.5, color='C0')
         plt.show()
         return rs
 
