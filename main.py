@@ -25,7 +25,21 @@ for t in range(T):
 	r_t = request[t]
 	y = system.get(r_t)
 	cost.append(system.cost(r_t))
-	system.put(request)
+	system.put(r_t)
+
+T = len(cost)
+avg = np.zeros(T)
+avg[0] = cost[0]
+for t in range(1, T):
+	avg[t] = sum(cost[:t]) / t
+
+plt.plot(np.arange(T), avg, "--")
+
+plt.title("Average cache cost over time for trace: " + trace.get_name())
+plt.xlabel("Time")
+plt.ylabel("Average cache cost")
+# plt.legend(loc="lower right")
+plt.show()
 
 
 # env = Environment("configs/system_config_omd.json")

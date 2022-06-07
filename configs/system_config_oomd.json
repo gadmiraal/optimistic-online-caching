@@ -2,7 +2,7 @@
   "catalog": 80,
   "cache size": 10,
   "cache type": "OOMD",
-  "time window": 10000,
+  "time window": 1000,
   "users": 1,
   "caches": 1,
   "config": [
