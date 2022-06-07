@@ -1,27 +1,48 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from environment import Environment
+from policies.OMD_Network import OMD_Network
 from traces.poisson_point import PoissonPoint
 from traces.fixed_pop import FixedPop
 from traces.sliding_pop import SlidingPop
 
 # Todo batch request?
 
-env = Environment("configs/system_config_omd.json")
-k = env.k
-N = env.N
-T = env.T
+k = 3
+N = 10
+T = 100
+I = 3
+J = 3
 trace = FixedPop(N, T)
-env.set_trace(trace)
+system = OMD_Network(k, N, T, I, J)
+request = np.zeros((T, I, N))
+for i in range(I):
+	r = trace.transform_to_request_array(trace.generate())
+	request[:, i, :] = r
 
-users = env.users
-caches = env.caches
-env.execute()
+cost = []
+for t in range(T):
+	r_t = request[t]
+	y = system.get(r_t)
+	cost.append(system.cost(r_t))
+	system.put(request)
 
-for i, cache in enumerate(caches):
-	cache.pretty_print(i)
 
-env.plot_caches(trace.get_name())
+# env = Environment("configs/system_config_omd.json")
+# k = env.k
+# N = env.N
+# T = env.T
+# trace = FixedPop(N, T)
+# env.set_trace(trace)
+#
+# users = env.users
+# caches = env.caches
+# env.execute()
+#
+# for i, cache in enumerate(caches):
+# 	cache.pretty_print(i)
+#
+# env.plot_caches(trace.get_name())
 
 
 # print("Misses_1: " + str(sum(omd_cache_1.misses))) # + ", Hits_1: " + str(omd_cache_2.hits))
