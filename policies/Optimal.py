@@ -24,3 +24,6 @@ class Optimal(Policy):
 
     def cache_content(self):
         pass
+
+    def get_label(self) -> str:
+        return self.name

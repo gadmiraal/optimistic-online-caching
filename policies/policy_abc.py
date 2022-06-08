@@ -28,3 +28,7 @@ class Policy(ABC):
     @abstractmethod
     def cost(self, r_t) -> float:
         pass
+
+    @abstractmethod
+    def get_label(self) -> str:
+        pass

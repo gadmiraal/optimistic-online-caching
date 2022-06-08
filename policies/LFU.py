@@ -102,6 +102,9 @@ class LFU(Policy):
 
         return dic
 
+    def get_label(self) -> str:
+        return self.name
+
 
 def dll_init():
     head = []

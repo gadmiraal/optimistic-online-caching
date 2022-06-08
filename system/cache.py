@@ -12,6 +12,12 @@ class Cache(Server):
         self.cost = []
         self.policy = policy
 
+    def process_trace(self, trace: ndarray):
+        for i, request in enumerate(trace):
+            future_request = trace[i + 1] if i < len(trace) - 2 else None
+            _ = self.process_request(request, future_request)
+
+
     def process_request(self, request: ndarray, future_request: ndarray) -> float:
         y = self.policy.get(request)
         self.misses.append(1 - y)
@@ -33,7 +39,7 @@ class Cache(Server):
 
         return avg
 
-    def get_avg_regret(self) -> ndarray:
+    def get_avg_cost(self) -> ndarray:
         T = len(self.misses)
         avg = np.zeros(T)
         avg[0] = self.cost[0]
@@ -42,13 +48,12 @@ class Cache(Server):
 
         return avg
 
-    def pretty_print(self, index):
-        name = type(self.policy).__name__ + str(index)
-        print("==========================" + name + "==========================")
-        # print("Total misses: " + str(sum(self.misses)))
-        # print("Avg   misses: " + str(np.mean(self.misses)))
+    def get_label(self):
+        return self.policy.get_label()
+
+    def pretty_print(self):
+        print("==========================" + self.get_label() + "==========================")
         print("Total   cost: " + str(sum(self.misses)))
         print("Avg     cost: " + str(np.mean(self.cost)))
         print("Cache  state: " + str(self.get_cache_content()))
-        # print("Correct recs: " + str(self.policy.correct))
 

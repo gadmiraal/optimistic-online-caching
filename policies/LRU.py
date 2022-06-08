@@ -44,3 +44,6 @@ class LRU(Policy):
             dic[key] = 1.0
 
         return dic
+
+    def get_label(self) -> str:
+        return self.name

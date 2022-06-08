@@ -8,60 +8,66 @@ from traces.sliding_pop import SlidingPop
 
 # Todo batch request?
 
-configs = [
-	"configs/system_config_lru.json",
-	"configs/system_config_omd.json",
-	"configs/system_config_oomd_00.json",
-	"configs/system_config_oomd_70.json",
-	"configs/system_config_oomd_100.json"
-]
+# configs = [
+# 	"configs/system_config_lru.json",
+# 	"configs/system_config_omd.json",
+# 	"configs/system_config_oomd_00.json",
+# 	"configs/system_config_oomd_70.json",
+# 	"configs/system_config_oomd_100.json"
+# ]
+#
+# names = [
+# 	"LRU",
+# 	"OMDne",
+# 	"OOMD: 0%",
+# 	"OOMD: 70%",
+# 	"OOMD: 100%",
+# ]
 
-names = [
-	"LRU",
-	"OMDne",
-	"OOMD: 0%",
-	"OOMD: 70%",
-	"OOMD: 100%",
-]
+env = Environment("configs/system_config.json")
+env.execute()
+env.plot_caches()
+env.print_caches()
 
-caches = []
-for config in configs:
-	env = Environment(config)
-	N = env.N
-	T = env.T
-	trace = Adversarial(N, T)
-
-	env.set_trace(trace)
-
-	cs = env.caches
-	env.execute()
-
-	for i, cache in enumerate(cs):
-		cache.pretty_print(i)
-		caches.append(cache)
-
-for i, cache in enumerate(caches):
-	T = len(cache.cost)
-	avg = np.zeros(T)
-	avg[0] = cache.cost[0]
-	for t in range(1, T):
-		avg[t] = sum(cache.cost[:t]) / t
-
-	# print(cache.policy.__class__.__name__)
-	# if cache.policy.__class__.__name__ == "OOMD":
-	# 	print(cache.policy.chance)
-	# 	print(names[i])
-	#
-	# print("Avg: " + str(avg[T-1]))
-	# print("=====================================")
-
-	plt.plot(np.arange(T), avg, "--", label=names[i])
-
-plt.title("Average cache cost for trace: " + trace.get_name())
-plt.xlabel("Time")
-plt.ylabel("Average cache cost")
-plt.legend(loc="best")
-plt.show()
+#
+# caches = []
+# for config in configs:
+# 	env = Environment(config)
+# 	N = env.N
+# 	T = env.T
+# 	trace = Adversarial(N, T)
+#
+# 	env.set_trace(trace)
+#
+# 	cs = env.caches
+# 	env.execute()
+#
+# 	for i, cache in enumerate(cs):
+# 		cache.pretty_print(i)
+# 		caches.append(cache)
+#
+# for i, cache in enumerate(caches):
+# 	T = len(cache.cost)
+# 	avg = np.zeros(T)
+# 	avg[0] = cache.cost[0]
+# 	for t in range(1, T):
+# 		avg[t] = sum(cache.cost[:t]) / t
+#
+# 	# print(cache.policy.__class__.__name__)
+# 	# if cache.policy.__class__.__name__ == "OOMD":
+# 	# 	print(cache.policy.chance)
+# 	# 	print(names[i])
+# 	#
+# 	# print("Avg: " + str(avg[T-1]))
+# 	# print("=====================================")
+#
+# 	plt.plot(np.arange(T), avg, "--", label=names[i])
+#
+# plt.title("Average cache cost for trace: " + trace.get_name())
+# plt.xlabel("Time")
+# plt.ylabel("Average cache cost")
+# plt.legend(loc="best")
+# plt.show()
 
 
 

@@ -162,3 +162,6 @@ class OOMD(Policy):
 
 	def return_x(self):
 		return self.x
+
+	def get_label(self) -> str:
+		return self.name + " - " + str(self.chance*100) + "%"

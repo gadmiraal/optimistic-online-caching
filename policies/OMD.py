@@ -138,3 +138,6 @@ class OMD(Policy):
 
 	def return_x(self):
 		return self.x
+
+	def get_label(self) -> str:
+		return self.name
