@@ -11,6 +11,8 @@ class LRU(Policy):
     def __init__(self, capacity: int, catalog: int, time_window: int) -> None:
         super().__init__(capacity, catalog, time_window)
         self.cache = OrderedDict()
+        self.name = "LRU"
+
 
     def get(self, y: ndarray) -> float:
         key = np.where(y == 1)[0][0]  # Todo change when multiple requests are made

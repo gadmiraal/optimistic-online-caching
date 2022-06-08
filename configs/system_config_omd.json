@@ -1,6 +1,6 @@
 {
-  "catalog": 80,
-  "cache size": 10,
+  "catalog": 10,
+  "cache size": 3,
   "cache type": "OMD",
   "time window": 1000,
   "users": 1,

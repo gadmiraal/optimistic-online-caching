@@ -1,6 +1,6 @@
 {
-  "catalog": 80,
-  "cache size": 10,
+  "catalog": 10,
+  "cache size": 3,
   "cache type": "OOMD",
   "chance": 0.0,
   "time window": 1000,

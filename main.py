@@ -47,6 +47,14 @@ for i, cache in enumerate(caches):
 	for t in range(1, T):
 		avg[t] = sum(cache.cost[:t]) / t
 
+	# print(cache.policy.__class__.__name__)
+	# if cache.policy.__class__.__name__ == "OOMD":
+	# 	print(cache.policy.chance)
+	# 	print(names[i])
+	#
+	# print("Avg: " + str(avg[T-1]))
+	# print("=====================================")
+
 	plt.plot(np.arange(T), avg, "--", label=names[i])
 
 plt.title("Average cache cost for trace: " + trace.get_name())

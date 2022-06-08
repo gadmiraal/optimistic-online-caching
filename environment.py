@@ -96,11 +96,7 @@ class Environment:
             # self.trace.plot(rs)
             rs = self.trace.transform_to_request_array(rs)
             user.set_trace(rs)
-
-        for t in range(self.trace.T):
-            for user in self.users:
-                request = user.trace[t]
-                user.execute_request(request)
+            user.execute_trace(rs)
 
     def execute_with_optimal(self):
         self.execute()

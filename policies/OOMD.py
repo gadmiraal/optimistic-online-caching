@@ -12,14 +12,14 @@ class OOMD(Policy):
 		super().__init__(capacity, catalog, time_window)
 		self.x = np.full(self.N, self.k / self.N)  # The vector indicating which files are stored in cache
 		self.y = np.full(self.N, self.k / self.N)  # The vector storing the proxy action
-		self.q = 2  # Todo also change gradient_mirror_map
-		self.p = 2  # Todo
 		self.h = 1  # Todo
 		self.R = 1  # The number of files requested for each request
 		self.learning_rate = self.calculate_lr()  # Learning rate of OMDne
 		self.init_problem()
 		self.P = 1
 		self.chance = chance
+		self.name = "OOMD"
+		self.r_t_next = None
 
 	def init_problem(self):
 		self.a = cp.Parameter(self.N)
@@ -35,13 +35,15 @@ class OOMD(Policy):
 		return self.x[key]
 
 	def put(self, r_t: ndarray):
-		r_bar_t = self.make_recommendation(r_t, chance=self.chance)
 		y_hat_t_next = self.y * np.exp(self.learning_rate * r_t * self.w)
 		y_t_next = self.project(y_hat_t_next)
-		x_hat_t_next = y_t_next * np.exp(self.learning_rate * r_bar_t * self.w)
+		r_bar_t_next = self.make_recommendation()
+		x_hat_t_next = y_t_next * np.exp(self.learning_rate * r_bar_t_next * self.w)
 		x_t_next = self.project(x_hat_t_next)
 		self.x = x_t_next
 		self.y = y_t_next
+		# print("r_t: " + str(np.where(r_t == 1)[0][0]))
+		# print("r_bar_t_next: " + str(np.where(r_bar_t_next == 1)[0][0]))
 
 	# x_t_next_2 = self.project2(y_t_next)
 	# x_t_next_3 = self.project3(y_t_next)
@@ -49,12 +51,17 @@ class OOMD(Policy):
 	# sum_2 = sum(x_t_next_2)
 	# sum_3 = sum(x_t_next_3)
 
-	def make_recommendation(self, r_t: ndarray, chance: float) -> ndarray:
+	def set_future_request(self, r_t_next: ndarray):
+		if r_t_next is not None:
+			self.r_t_next = r_t_next
+
+
+	def make_recommendation(self) -> ndarray:
 		roll = np.random.random()
-		if roll <= chance:
-			return r_t
+		if roll <= self.chance:
+			return self.r_t_next
 		else:
-			actual_id = np.where(r_t == 1)[0][0]
+			actual_id = np.where(self.r_t_next == 1)[0][0]
 			r_bar_t = np.zeros(self.N)
 			file_id = np.random.randint(0, self.N)
 			while actual_id != file_id:

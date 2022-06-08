@@ -12,10 +12,12 @@ class Cache(Server):
         self.cost = []
         self.policy = policy
 
-    def process_request(self, request: ndarray) -> float:
+    def process_request(self, request: ndarray, future_request: ndarray) -> float:
         y = self.policy.get(request)
         self.misses.append(1 - y)
         self.cost.append(self.policy.cost(request))
+        if self.policy.name == "OOMD":
+            self.policy.set_future_request(future_request)
         self.policy.put(request)
         return y
 
@@ -43,9 +45,10 @@ class Cache(Server):
     def pretty_print(self, index):
         name = type(self.policy).__name__ + str(index)
         print("==========================" + name + "==========================")
-        print("Total misses: " + str(sum(self.misses)))
-        print("Avg   misses: " + str(np.mean(self.misses)))
+        # print("Total misses: " + str(sum(self.misses)))
+        # print("Avg   misses: " + str(np.mean(self.misses)))
         print("Total   cost: " + str(sum(self.misses)))
         print("Avg     cost: " + str(np.mean(self.cost)))
+        print("Cache  state: " + str(self.get_cache_content()))
         # print("Correct recs: " + str(self.policy.correct))
 

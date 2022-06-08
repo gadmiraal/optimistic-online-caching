@@ -9,5 +9,5 @@ class Server(ABC):
         pass
 
     @abstractmethod
-    def process_request(self, request: ndarray) -> float:
+    def process_request(self, request: ndarray, future_request: ndarray) -> float:
         pass
