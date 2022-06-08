@@ -47,7 +47,8 @@ class Environment:
             c_names.append(cache_name)
             klass = globals()[cache_name]
             if cache_name == "OOMD":
-                cs.append(Cache(klass(k, N, T, c_type[cache_name])))
+                t1 = Cache(klass(k, N, T, c_type[cache_name]))
+                cs.append(t1)
             else:
                 cs.append(Cache(klass(k, N, T)))
 

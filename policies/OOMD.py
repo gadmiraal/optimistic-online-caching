@@ -63,10 +63,11 @@ class OOMD(Policy):
 		else:
 			actual_id = np.where(self.r_t_next == 1)[0][0]
 			r_bar_t = np.zeros(self.N)
-			file_id = np.random.randint(0, self.N)
-			while actual_id != file_id:
-				file_id = np.random.randint(0, self.N)
-			r_bar_t[file_id] = 1
+			rec_id = np.random.randint(0, self.N)
+			while actual_id == rec_id:
+				rec_id = np.random.randint(0, self.N)
+
+			r_bar_t[rec_id] = 1
 			return r_bar_t
 
 	def calculate_lr(self):

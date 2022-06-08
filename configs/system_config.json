@@ -1,7 +1,7 @@
 {
   "catalog": 20,
   "cache size": 3,
-  "trace": "FixedPop",
+  "trace": "SlidingPop",
   "cache type": [
     {"LRU":  ""},
     {"OMD":  ""},
