@@ -1,9 +1,8 @@
 {
   "catalog": 20,
   "cache size": 3,
-  "trace": "SlidingPop",
+  "trace": "Adversarial",
   "cache type": [
-    {"LRU":  ""},
     {"OMD":  ""},
     {"OOMD":  0.0},
     {"OOMD":  0.7},

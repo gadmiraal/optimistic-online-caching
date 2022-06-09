@@ -58,16 +58,17 @@ class Environment:
         self.caches = cs
         self.c_names = c_names
         self.trace = globals()[trace_name](N, T)
+        self.rs = None
 
     def plot_caches(self):
         for cache in self.caches:
             cost = cache.get_avg_cost()
-            plt.plot(np.arange(self.T), cost, "--", label=cache.get_label())
+            plt.plot(np.arange(len(cost)), cost, "--", label=cache.get_label())
 
         plt.title("Average cache cost, for trace: " + self.trace.get_name())
         plt.xlabel("Time")
         plt.ylabel("Average cache cost")
-        plt.legend(loc="upper right")
+        plt.legend()
         plt.show()
 
     def print_caches(self):
@@ -81,15 +82,19 @@ class Environment:
         rs = self.trace.generate()
         # self.trace.plot(rs)
         rs = self.trace.transform_to_request_array(rs)
+        self.rs = rs
         for cache in self.caches:
             cache.process_trace(rs)
 
     def execute_with_optimal(self):
-        # self.execute()
-        # if self.c_type == "OMD":
-        #     optimals = []
-        #     for cache in self.caches:
-        #         optimal = Optimal(self.k, self.N, self.T)
-        #         optimal.set_cache(cache.return_x())
-        #         optimals.append(optimal)
-        pass
+        self.execute()
+
+        test = Cache(OOMD(self.k, self.N, self.T, 1.0))
+        test.process_trace(self.rs)
+        cache_state = test.policy.x
+        optimal = Cache(Optimal(self.k, self.N, self.T, cache_state))
+        optimal.process_trace(self.rs)
+
+        self.caches.append(optimal)
+
+

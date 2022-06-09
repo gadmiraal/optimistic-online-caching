@@ -25,7 +25,7 @@ from traces.sliding_pop import SlidingPop
 # ]
 
 env = Environment("configs/system_config.json")
-env.execute()
+env.execute_with_optimal()
 env.plot_caches()
 env.print_caches()
 
