@@ -3,6 +3,8 @@ import json
 import numpy as np
 from matplotlib import pyplot as plt
 
+from policies.OMD_Network import OMD_Network
+from policies.OOMD_Network import OOMD_Network
 from policies.Optimal import Optimal
 from system.cache import Cache
 from traces.trace_abc import Trace
@@ -25,6 +27,9 @@ class Environment:
         self.k = None
         self.N = None
         self.T = None
+        self.I = None
+        self.J = None
+        self.requests = None
         self.c_names = None
         self.read_config_file(path)
 
@@ -38,6 +43,8 @@ class Environment:
         T = data["time window"]
         c_types = data["cache type"]
         trace_name = data["trace"]
+        I = data["users"]
+        J = data["caches"]
 
         # Create caches
         cs = []
@@ -47,18 +54,25 @@ class Environment:
             c_names.append(cache_name)
             klass = globals()[cache_name]
             if cache_name == "OOMD":
-                t1 = Cache(klass(k, N, T, c_type[cache_name]))
-                cs.append(t1)
+                cache = Cache(klass(k, N, T, c_type[cache_name]))
+                cs.append(cache)
+            elif cache_name == "OMD_Network":
+                cache = Cache(klass(k, N, T, I, J))
+                cs.append(cache)
+            elif cache_name == "OOMD_Network":
+                cache = Cache(klass(k, N, T, c_type[cache_name], I, J))
+                cs.append(cache)
             else:
                 cs.append(Cache(klass(k, N, T)))
 
         self.k = k
         self.N = N
         self.T = T
+        self.I = I
+        self.J = J
         self.caches = cs
         self.c_names = c_names
         self.trace = globals()[trace_name](N, T)
-        self.rs = None
 
     def plot_caches(self):
         for cache in self.caches:
@@ -79,21 +93,25 @@ class Environment:
         self.trace = trace
 
     def execute(self):
-        rs = self.trace.generate()
+        requests = np.zeros((self.T, self.I, self.N))
+        for i in range(self.I):
+            r = self.trace.transform_to_request_array(self.trace.generate())
+            requests[:, i, :] = r
+        # requests = self.trace.generate()
         # self.trace.plot(rs)
-        rs = self.trace.transform_to_request_array(rs)
-        self.rs = rs
+        # requests = self.trace.transform_to_request_array(requests)
+        self.requests = requests
         for cache in self.caches:
-            cache.process_trace(rs)
+            cache.process_trace(requests)
 
     def execute_with_optimal(self):
         self.execute()
 
         test = Cache(OOMD(self.k, self.N, self.T, 1.0))
-        test.process_trace(self.rs)
+        test.process_trace(self.requests)
         cache_state = test.policy.x
         optimal = Cache(Optimal(self.k, self.N, self.T, cache_state))
-        optimal.process_trace(self.rs)
+        optimal.process_trace(self.requests)
 
         self.caches.append(optimal)
 

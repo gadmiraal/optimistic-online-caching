@@ -6,9 +6,9 @@ from numpy import ndarray
 from policies.policy_abc import Policy
 
 
-class OMD_Network(Policy):
+class OOMD_Network(Policy):
 
-	def __init__(self, capacity: int, catalog: int, time_window: int, users: int, caches: int) -> None:
+	def __init__(self, capacity: int, catalog: int, time_window: int, chance: float, users: int, caches: int) -> None:
 		super().__init__(capacity, catalog, time_window)
 		self.h = 1
 		self.I = users
@@ -16,11 +16,14 @@ class OMD_Network(Policy):
 		self.x = np.full((self.J, self.N), self.k / self.N)  # The vector indicating which files are stored in cache
 		self.R = 1 * self.I  # The number of files requested for each request
 		self.z = np.full((self.I, self.J, self.N), min(1 / self.J, self.k / self.N))
+		self.y = np.full((self.I, self.J, self.N), min(1 / self.J, self.k / self.N))  # The vector storing the proxy action
 		self.learning_rate = self.calculate_lr()  # Learning rate of OMD
 		self.init_problem()
 		self.w = np.ones((self.I, self.J, self.N))
 		self.P = 1
-		self.name = "OMD Network"
+		self.chance = chance
+		self.r_t_next = None
+		self.name = "OOMD Network"
 
 	def init_problem(self):
 		self.x_par = cp.Parameter((self.J, self.N))  # Parameter projecting the x variable
@@ -59,10 +62,38 @@ class OMD_Network(Policy):
 		return self.x[key]
 
 	def put(self, r_t: ndarray):
-		z_hat_t_next = self.z * np.exp(self.learning_rate * r_t * self.w)
+		# z_hat_t_next = self.z * np.exp(self.learning_rate * r_t * self.w)
+		# x_t_next, z_t_next = self.project(z_hat_t_next)
+		# self.x = x_t_next
+		# self.z = z_t_next
+
+		y_hat_t_next = self.y * np.exp(self.learning_rate * r_t * self.w)
+		_, y_t_next = self.project(y_hat_t_next)
+		r_bar_t_next = self.make_recommendation()
+		z_hat_t_next = y_t_next * np.exp(self.learning_rate * r_bar_t_next * self.w)
 		x_t_next, z_t_next = self.project(z_hat_t_next)
 		self.x = x_t_next
+		self.y = y_t_next
 		self.z = z_t_next
+
+
+	def set_future_request(self, r_t_next: ndarray):
+		if r_t_next is not None:
+			self.r_t_next = r_t_next
+
+	def make_recommendation(self) -> ndarray:
+		roll = np.random.random()
+		if roll <= self.chance:
+			return self.r_t_next
+		else:
+			actual_id = np.where(self.r_t_next == 1)[0][0]
+			r_bar_t = np.zeros(self.N)
+			rec_id = np.random.randint(0, self.N)
+			while actual_id == rec_id:
+				rec_id = np.random.randint(0, self.N)
+
+			r_bar_t[rec_id] = 1
+			return r_bar_t
 
 	def calculate_lr(self):
 		t1 = 2 * np.log(self.N / self.k)
@@ -108,4 +139,4 @@ class OMD_Network(Policy):
 		return total
 
 	def get_label(self) -> str:
-		return self.name
+		return self.name + " - " + str(self.chance * 100) + "%"

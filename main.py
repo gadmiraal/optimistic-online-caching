@@ -9,42 +9,45 @@ from traces.sliding_pop import SlidingPop
 
 # Todo batch request?
 
-k = 3
-N = 10
-T = 100
-I = 3
-J = 3
-trace = FixedPop(N, T)
-system = OMD_Network(k, N, T, I, J)
-request = np.zeros((T, I, N))
-for i in range(I):
-	r = trace.transform_to_request_array(trace.generate())
-	request[:, i, :] = r
+env = Environment("configs/system_config.json")
+env.execute()
+env.plot_caches()
+env.print_caches()
 
-utility = []
-for t in range(T):
-	r_t = request[t]
-	utility.append(system.utility(r_t))
-	system.put(r_t)
 
-T = len(utility)
-avg = np.zeros(T)
-avg[0] = utility[0]
-for t in range(1, T):
-	avg[t] = sum(utility[:t]) / t
+# k = 3
+# N = 10
+# T = 100
+# I = 3
+# J = 3
+# trace = FixedPop(N, T)
+# system = OMD_Network(k, N, T, I, J)
+# request = np.zeros((T, I, N))
+# for i in range(I):
+# 	r = trace.transform_to_request_array(trace.generate())
+# 	request[:, i, :] = r
+#
+# utility = []
+# for t in range(T):
+# 	r_t = request[t]
+# 	utility.append(system.utility(r_t))
+# 	system.put(r_t)
+#
+# T = len(utility)
+# avg = np.zeros(T)
+# avg[0] = utility[0]
+# for t in range(1, T):
+# 	avg[t] = sum(utility[:t]) / t
+#
+# plt.plot(np.arange(T), avg, "--")
+#
+# plt.title("Average cache utility over time for trace: " + trace.get_name())
+# plt.xlabel("Time")
+# plt.ylabel("Average cache cost")
+# # plt.legend(loc="lower right")
+# plt.show()
 
-plt.plot(np.arange(T), avg, "--")
 
-plt.title("Average cache utility over time for trace: " + trace.get_name())
-plt.xlabel("Time")
-plt.ylabel("Average cache cost")
-# plt.legend(loc="lower right")
-plt.show()
-
-# env = Environment("configs/system_config.json")
-# env.execute_with_optimal()
-# env.plot_caches()
-# env.print_caches()
 
 
 # env = Environment("configs/system_config_omd.json")
