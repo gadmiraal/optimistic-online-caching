@@ -11,6 +11,7 @@ class Policy(ABC):
         self.N = catalog
         self.T = time_window
         self.w = np.ones(catalog)  # Todo when we move from a single cache system
+        self.name = None
 
     @abstractmethod
     def get(self, y: ndarray) -> float:
@@ -26,4 +27,8 @@ class Policy(ABC):
 
     @abstractmethod
     def cost(self, r_t) -> float:
+        pass
+
+    @abstractmethod
+    def get_label(self) -> str:
         pass

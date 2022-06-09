@@ -8,39 +8,42 @@ from policies.policy_abc import Policy
 
 class OOMD(Policy):
 
-	def __init__(self, capacity: int, catalog: int, time_window: int) -> None:
+	def __init__(self, capacity: int, catalog: int, time_window: int, chance=0.0) -> None:
 		super().__init__(capacity, catalog, time_window)
 		self.x = np.full(self.N, self.k / self.N)  # The vector indicating which files are stored in cache
-		self.q = 2  # Todo also change gradient_mirror_map
-		self.p = 2  # Todo
+		self.y = np.full(self.N, self.k / self.N)  # The vector storing the proxy action
 		self.h = 1  # Todo
 		self.R = 1  # The number of files requested for each request
-		self.learning_rate = self.calculate_lr()  # Learning rate of OMD
+		self.learning_rate = self.calculate_lr()  # Learning rate of OMDne
 		self.init_problem()
 		self.P = 1
-		self.correct = 0
+		self.chance = chance
+		self.name = "OOMD"
+		self.r_t_next = None
 
 	def init_problem(self):
-		self.y = cp.Parameter(self.N)
-		self.y_var = cp.Variable(self.N, nonneg=True)
+		self.a = cp.Parameter(self.N)
+		self.a_var = cp.Variable(self.N, nonneg=True)
 		self.constraints = [
-			cp.sum(self.y_var) <= self.k,
-			self.y_var <= 1
+			cp.sum(self.a_var) <= self.k,
+			self.a_var <= 1
 		]
-
-		self.problem = cp.Problem(cp.Minimize(cp.sum_squares(self.y - self.y_var)), self.constraints)
+		self.problem = cp.Problem(cp.Minimize(cp.sum_squares(self.a - self.a_var)), self.constraints)
 
 	def get(self, y: ndarray) -> float:
 		key = np.where(y == 1)[0][0]  # Todo change when multiple requests are made
 		return self.x[key]
 
 	def put(self, r_t: ndarray):
-		r_bar_t = self.make_recommendation(r_t, 0.0)
-		y_hat_t_next = self.x * np.exp(self.learning_rate * r_bar_t * self.w)
+		y_hat_t_next = self.y * np.exp(self.learning_rate * r_t * self.w)
 		y_t_next = self.project(y_hat_t_next)
-		x_hat_t_next = y_t_next * np.exp(self.learning_rate * r_t * self.w)
+		r_bar_t_next = self.make_recommendation()
+		x_hat_t_next = y_t_next * np.exp(self.learning_rate * r_bar_t_next * self.w)
 		x_t_next = self.project(x_hat_t_next)
 		self.x = x_t_next
+		self.y = y_t_next
+		# print("r_t: " + str(np.where(r_t == 1)[0][0]))
+		# print("r_bar_t_next: " + str(np.where(r_bar_t_next == 1)[0][0]))
 
 	# x_t_next_2 = self.project2(y_t_next)
 	# x_t_next_3 = self.project3(y_t_next)
@@ -48,18 +51,23 @@ class OOMD(Policy):
 	# sum_2 = sum(x_t_next_2)
 	# sum_3 = sum(x_t_next_3)
 
-	def make_recommendation(self, r_t: ndarray, chance: float) -> ndarray:
+	def set_future_request(self, r_t_next: ndarray):
+		if r_t_next is not None:
+			self.r_t_next = r_t_next
+
+
+	def make_recommendation(self) -> ndarray:
 		roll = np.random.random()
-		if roll <= chance:
-			self.correct += 1
-			return r_t
+		if roll <= self.chance:
+			return self.r_t_next
 		else:
-			actual_id = np.where(r_t == 1)[0][0]
+			actual_id = np.where(self.r_t_next == 1)[0][0]
 			r_bar_t = np.zeros(self.N)
-			file_id = np.random.randint(0, self.N)
-			while actual_id != file_id:
-				file_id = np.random.randint(0, self.N)
-			r_bar_t[file_id] = 1
+			rec_id = np.random.randint(0, self.N)
+			while actual_id == rec_id:
+				rec_id = np.random.randint(0, self.N)
+
+			r_bar_t[rec_id] = 1
 			return r_bar_t
 
 	def calculate_lr(self):
@@ -85,11 +93,11 @@ class OOMD(Policy):
 		return dict(zipped)
 
 	def project(self, y):
-		self.y.project_and_assign(y)
+		self.a.project_and_assign(y)
 		self.problem.solve()
 		if self.problem.status != "optimal":
 			print("status:", self.problem.status)
-		return self.y_var.value
+		return self.a_var.value
 
 	def project2(self, y):
 		d = np.argsort(y)
@@ -155,3 +163,6 @@ class OOMD(Policy):
 
 	def return_x(self):
 		return self.x
+
+	def get_label(self) -> str:
+		return self.name + " - " + str(self.chance*100) + "%"

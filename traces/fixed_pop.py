@@ -1,7 +1,7 @@
 import numpy as np
 
 from traces.trace_abc import Trace
-np.random.seed(42)
+# np.random.seed(42)
 
 
 class FixedPop(Trace):

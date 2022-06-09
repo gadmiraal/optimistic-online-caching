@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from environment import Environment
+from traces.adversarial import Adversarial
 from policies.OMD_Network import OMD_Network
 from traces.poisson_point import PoissonPoint
 from traces.fixed_pop import FixedPop
@@ -39,6 +40,11 @@ plt.xlabel("Time")
 plt.ylabel("Average cache cost")
 # plt.legend(loc="lower right")
 plt.show()
+
+# env = Environment("configs/system_config.json")
+# env.execute_with_optimal()
+# env.plot_caches()
+# env.print_caches()
 
 
 # env = Environment("configs/system_config_omd.json")

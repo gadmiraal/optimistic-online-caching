@@ -18,16 +18,17 @@ class OMD(Policy):
 		self.learning_rate = self.calculate_lr()  # Learning rate of OMD
 		self.init_problem()
 		self.P = 1
+		self.name = "OMD"
 
 	def init_problem(self):
-		self.y = cp.Parameter(self.N)
-		self.y_var = cp.Variable(self.N, nonneg=True)
+		self.x_par = cp.Parameter((self.N, ))
+		self.x_var = cp.Variable(self.N, nonneg=True)
 		self.constraints = [
-			cp.sum(self.y_var) <= self.k,
-			self.y_var <= 1
+			cp.sum(self.x_var) <= self.k,
+			self.x_var <= 1
 		]
 
-		self.problem = cp.Problem(cp.Minimize(cp.sum_squares(self.y - self.y_var)), self.constraints)
+		self.problem = cp.Problem(cp.Minimize(cp.sum_squares(self.x_par - self.x_var)), self.constraints)
 
 	def get(self, y: ndarray) -> float:
 		key = np.where(y == 1)[0][0]  # Todo change when multiple requests are made
@@ -67,11 +68,11 @@ class OMD(Policy):
 		return dict(zipped)
 
 	def project(self, y):
-		self.y.project_and_assign(y)
+		self.x_par.project_and_assign(y)
 		self.problem.solve()
 		if self.problem.status != "optimal":
 			print("status:", self.problem.status)
-		return self.y_var.value
+		return self.x_var.value
 
 	def project2(self, y):
 		d = np.argsort(y)
@@ -137,3 +138,6 @@ class OMD(Policy):
 
 	def return_x(self):
 		return self.x
+
+	def get_label(self) -> str:
+		return self.name

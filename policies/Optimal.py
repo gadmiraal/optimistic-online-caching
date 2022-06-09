@@ -6,9 +6,11 @@ from system.cache import Cache
 
 class Optimal(Policy):
 
-    def __init__(self, capacity: int, catalog: int, time_window: int) -> None:
+    def __init__(self, capacity: int, catalog: int, time_window: int, cache_state) -> None:
         super().__init__(capacity, catalog, time_window)
-        self.x = np.zeros(catalog)
+        self.x = np.full(self.N, self.k / self.N) if cache_state is None else cache_state
+        self.name = "Optimal"
+
 
     def set_cache(self, x):
         self.x = x
@@ -21,4 +23,12 @@ class Optimal(Policy):
         pass
 
     def cache_content(self):
-        pass
+        keys = np.arange(self.N)
+        zipped = zip(keys, np.round(self.x, 6))
+        return dict(zipped)
+
+    def cost(self, r_t):
+        return np.sum(self.w * r_t * (1 - self.x))
+
+    def get_label(self) -> str:
+        return self.name

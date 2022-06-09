@@ -18,6 +18,7 @@ class LFU(Policy):
         super().__init__(capacity, catalog, time_window)
         self.bucket_head = dll_init()
         self.cache = dict()
+        self.name = "LFU"
 
     def remove_node(self, node):
         item = node[2]
@@ -100,6 +101,9 @@ class LFU(Policy):
             dic[key] = 1.0
 
         return dic
+
+    def get_label(self) -> str:
+        return self.name
 
 
 def dll_init():
